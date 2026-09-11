@@ -88,18 +88,18 @@ Commits from cloud sessions carry a `Co-Authored-By: Devin AI` trailer. Commits 
 
 ### Cost
 
-From `docs/session-log.md` (times PDT; `__` means not yet read from the usage page):
+From `docs/session-log.md` (times PDT; total cloud spend $33.88):
 
 | Session | Start | End | $ used | Interventions |
 | --- | --- | --- | --- | --- |
-| Platform | 11:08 | 11:56 | $0 (CLI, in seat) | 1 |
-| KYC queue | 11:46 | 14:14 | $__ | 3 |
-| Refunds | 12:54 | 14:11 | $__ | 2 |
-| Registry fix | 13:1_ | 13:26 | $0 | 0 |
-| Auth hardening | 13:2_ | 14:11 | $0 | 0 |
-| Integration | 14:25 | __ | $__ | 0 |
+| Platform | 11:08 | 11:56 | $0 (CLI, SWE-2 free tier; 8.6M prompt / 94k completion tokens) | 1 |
+| KYC queue | 11:46 | 14:14 | $16.41 (includes environment setup) | 3 |
+| Refunds | 12:54 | 14:11 | $17.47 | 2 |
+| Registry fix | 13:17 | 13:26 | $0 | 0 |
+| Auth hardening | 13:28 | 14:11 | $0 | 0 |
+| Integration | 14:25 | 14:45 | included in KYC (same session) | 0 |
 
-Cost of the next app, taken as the smaller of the two app sessions: $__ and about 1h20m wall clock (refunds), including review follow-ups.
+Cost of the next app, taken as the smaller of the two app sessions: under $16.41 (the KYC figure includes environment setup) and about 1h20m wall clock (refunds), including review follow-ups.
 
 ## Not built and why
 
