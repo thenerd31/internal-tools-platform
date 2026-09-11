@@ -2,11 +2,11 @@
 
 | Session | Task | Surface and model | Start | End | $ used | Interventions | Root causes / what went wrong | Self-report |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| 1 | Platform | Devin CLI, SWE-2 High | 11:08 | 11:56 |  | 1 — CI red on all three jobs after a green local run | `better-sqlite3@13` requires Node ≥22 and segfaulted on Node 20 (pinned to `^12.11.1`); Semgrep `p/default` blocked mutable action tags (pinned to SHAs) | [platform.md](sessions/platform.md) |
+| 1 | Platform | Devin CLI, SWE-2 High | 11:08 | 11:56 | $0 | 1 — CI red on all three jobs after a green local run | `better-sqlite3@13` requires Node ≥22 and segfaulted on Node 20 (pinned to `^12.11.1`); Semgrep `p/default` blocked mutable action tags (pinned to SHAs) | [platform.md](sessions/platform.md) |
 | 2 | KYC queue |  |  |  |  |  |  |  |
 | 3 | Refunds |  |  |  |  |  |  |  |
 
-Times are PDT from the local transcript (`bitter-lemming`, first step 18:08Z → last step 18:56Z). `$ used` comes from the org usage page — not available in the CLI or transcript; left blank.
+Times are PDT from the local transcript (`bitter-lemming`, first step 18:08Z → last step 18:56Z). `$ used` is $0 per the org usage page (CLI usage is included in the seat; the transcript records tokens only: 8.6M prompt / 94k completion).
 
 ## Decisions Devin made that I accepted
 
