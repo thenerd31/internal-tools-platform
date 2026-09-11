@@ -19,7 +19,7 @@ Sign in at `/login`. Admin lands on both apps and the audit log; other roles see
 
 | Email | Role | Sees |
 | --- | --- | --- |
-| `analyst@demo.local` | analyst | KYC queue: unassigned cases and own cases below risk 70 |
+| `analyst@demo.local` | analyst | KYC queue: unassigned cases and own cases; can claim and decide only below risk 70 |
 | `supervisor@demo.local` | supervisor | KYC queue: every case, can decide risk 70 and above |
 | `agent@demo.local` | agent | Refunds: customer search, refunds up to 50000 cents |
 | `lead@demo.local` | lead | Refunds plus the Approvals queue |
