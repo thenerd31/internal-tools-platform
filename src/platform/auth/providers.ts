@@ -6,31 +6,41 @@ import { getDb } from "../db";
 import { users } from "../db/schema";
 import type { Role } from "../types";
 
-/** Credentials for dev always; OIDC registered only when AUTH_OIDC_ISSUER is set. */
+/**
+ * Credentials for dev; OIDC registered only when AUTH_OIDC_ISSUER is set.
+ * In production the dev Credentials provider is disabled unless
+ * AUTH_ALLOW_DEV_LOGIN=true (emergency escape hatch).
+ */
 export function buildProviders(): Provider[] {
-  const providers: Provider[] = [
-    Credentials({
-      credentials: { email: {}, password: {} },
-      async authorize(credentials) {
-        const email = String(credentials?.email ?? "").toLowerCase();
-        const password = String(credentials?.password ?? "");
-        const user = getDb()
-          .select()
-          .from(users)
-          .where(eq(users.email, email))
-          .get();
-        if (!user) return null;
-        const ok = await bcrypt.compare(password, user.passwordHash);
-        if (!ok) return null;
-        return {
-          id: user.id,
-          email: user.email,
-          name: user.name,
-          role: user.role as Role,
-        };
-      },
-    }),
-  ];
+  const providers: Provider[] = [];
+  const devLoginAllowed =
+    process.env.NODE_ENV !== "production" ||
+    process.env.AUTH_ALLOW_DEV_LOGIN === "true";
+  if (devLoginAllowed) {
+    providers.push(
+      Credentials({
+        credentials: { email: {}, password: {} },
+        async authorize(credentials) {
+          const email = String(credentials?.email ?? "").toLowerCase();
+          const password = String(credentials?.password ?? "");
+          const user = getDb()
+            .select()
+            .from(users)
+            .where(eq(users.email, email))
+            .get();
+          if (!user) return null;
+          const ok = await bcrypt.compare(password, user.passwordHash);
+          if (!ok) return null;
+          return {
+            id: user.id,
+            email: user.email,
+            name: user.name,
+            role: user.role as Role,
+          };
+        },
+      }),
+    );
+  }
   if (process.env.AUTH_OIDC_ISSUER) {
     providers.push({
       id: "oidc",

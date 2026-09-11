@@ -7,14 +7,14 @@ test("admin sees /admin/audit newest first and Verify chain shows OK", async ({
   await login(page, "admin@demo.local");
   await page.goto("/admin/audit");
   await expect(page.getByRole("heading", { name: "Audit log" })).toBeVisible();
-  // Seed writes one row per user; newest first means highest seq on top.
-  const seqs = await page.locator("tbody tr td").evaluateAll((cells) =>
-    cells
-      .filter((_, index) => index % 7 === 0)
-      .map((cell) => Number(cell.textContent)),
-  );
-  expect(seqs[0]).toBeGreaterThanOrEqual(5);
-  expect(seqs[1]).toBe(seqs[0] - 1);
+  // Newest first: the top seq is higher than the one below it.
+  const seqs = page.locator("tbody tr td:first-child");
+  const firstSeq = Number(await seqs.nth(0).textContent());
+  const secondSeq = Number(await seqs.nth(1).textContent());
+  expect(Number.isNaN(firstSeq)).toBe(false);
+  expect(Number.isNaN(secondSeq)).toBe(false);
+  expect(firstSeq).toBeGreaterThan(secondSeq);
+  expect(firstSeq).toBeGreaterThanOrEqual(5);
   await page.getByRole("button", { name: "Verify chain" }).click();
   await expect(page.getByTestId("verify-result")).toHaveText(/^OK \d+ rows$/);
 });

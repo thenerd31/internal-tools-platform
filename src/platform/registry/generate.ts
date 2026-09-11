@@ -31,10 +31,16 @@ export const manifests: AppManifest[] = [${list}];
 `;
 }
 
-/** Writes generated.ts if missing (scripts run outside Next's pre-hooks). */
-export function ensureRegistry(): void {
-  if (!fs.existsSync(GENERATED_PATH)) {
-    fs.mkdirSync(path.dirname(GENERATED_PATH), { recursive: true });
-    fs.writeFileSync(GENERATED_PATH, generateRegistrySource());
-  }
+/**
+ * Regenerates generated.ts unconditionally so seed/e2e never see a stale
+ * registry when a manifest was added or removed since the last run.
+ * (Scripts run outside Next's pre-hooks, and npm pre-hooks only fire via
+ * `npm run` — this also covers direct `tsx` and test invocations.)
+ */
+export function ensureRegistry(
+  appsDir: string = APPS_DIR,
+  outPath: string = GENERATED_PATH,
+): void {
+  fs.mkdirSync(path.dirname(outPath), { recursive: true });
+  fs.writeFileSync(outPath, generateRegistrySource(appsDir));
 }
