@@ -25,6 +25,13 @@
   and ownership checks are authorization errors (403).
 - Version mismatches are checked before state validation for decisions, so a
   stale retry returns 409.
+- The AC9 test (`decideCaseAs` twice with the same version) proves the version
+  check produces exactly one `ConflictError`; because better-sqlite3
+  transactions are synchronous, the two calls run sequentially rather than
+  concurrently, so it exercises optimistic locking, not true concurrency.
+- Policies return a boolean, so denial reasons are duplicated in the UI layer
+  (`decideDisabledReason` reconstructs the message after `authorize` denies); a
+  pilot improvement is policies returning a reason.
 - The seed writes no audit rows; seeded audit history is created only through
   user mutations.
 - There is one seeded analyst, so the pending case hidden from the analyst

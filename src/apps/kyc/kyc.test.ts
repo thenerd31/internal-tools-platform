@@ -325,7 +325,7 @@ describe("KYC review queue", () => {
       db,
     );
 
-    const history = await getCaseHistory("case-1", db);
+    const history = await getCaseHistory(actors.analyst, "case-1", db);
     expect(history.map((row) => row.action)).toEqual([
       "kyc.case.claim",
       "kyc.case.decide",

@@ -3,7 +3,7 @@ import { append } from "@/platform/audit";
 import { authorize } from "@/platform/authz";
 import { getDb, optimisticUpdate, withMutation, type Db } from "@/platform/db";
 import { auditLog } from "@/platform/db/schema";
-import { ConflictError, ValidationError } from "@/platform/errors";
+import { ConflictError, ForbiddenError, ValidationError } from "@/platform/errors";
 import type { Actor } from "@/platform/types";
 import { kycCases, SUPERVISOR_THRESHOLD, type Decision, type KycCase, type KycStatus } from "./schema";
 
@@ -173,6 +173,9 @@ export async function listCasesFor(
   db: Db = getDb(),
 ): Promise<KycCase[]> {
   const conditions = [];
+  // Read scope, not authorization: supervisors and admins see every case,
+  // everyone else sees their own plus unassigned. Access is still enforced
+  // per-case by the kyc.case.view policy in getCaseFor.
   if (actor.role !== "supervisor" && actor.role !== "admin") {
     conditions.push(
       or(eq(kycCases.assigneeId, actor.id), isNull(kycCases.assigneeId)),
@@ -198,7 +201,14 @@ export async function getCaseFor(
   return kase;
 }
 
-export async function getCaseHistory(id: string, db: Db = getDb()) {
+export async function getCaseHistory(
+  actor: Actor,
+  id: string,
+  db: Db = getDb(),
+) {
+  const kase = getCase(id, db);
+  if (!kase) return [];
+  authorize(actor, "kyc.case.view", kase);
   return db
     .select()
     .from(auditLog)
@@ -208,18 +218,20 @@ export async function getCaseHistory(id: string, db: Db = getDb()) {
 }
 
 export function decideDisabledReason(actor: Actor, kase: KycCase): string | null {
-  if (
-    actor.role !== "analyst" &&
-    actor.role !== "supervisor" &&
-    actor.role !== "admin"
-  ) {
+  // authorize is the gate: if the kyc.case.decide policy denies, the form is
+  // disabled. The analyst branches below only choose a specific message —
+  // policies return boolean, so the denial reason has to be reconstructed here.
+  try {
+    authorize(actor, "kyc.case.decide", kase);
+  } catch (error) {
+    if (!(error instanceof ForbiddenError)) throw error;
+    if (actor.role === "analyst" && kase.riskScore >= SUPERVISOR_THRESHOLD) {
+      return "Cases with risk score 70+ require a supervisor";
+    }
+    if (actor.role === "analyst" && kase.assigneeId !== actor.id) {
+      return "Only the assignee can decide this case";
+    }
     return "Your role cannot decide cases";
-  }
-  if (actor.role === "analyst" && kase.riskScore >= SUPERVISOR_THRESHOLD) {
-    return "Cases with risk score 70+ require a supervisor";
-  }
-  if (actor.role === "analyst" && kase.assigneeId !== actor.id) {
-    return "Only the assignee can decide this case";
   }
   if (kase.status === "approved" || kase.status === "rejected") {
     return "Case is approved/rejected — terminal";

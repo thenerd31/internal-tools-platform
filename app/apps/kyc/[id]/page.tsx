@@ -44,7 +44,7 @@ export default async function KycCasePage({
     throw error;
   }
   if (!kase) notFound();
-  const history = await getCaseHistory(id);
+  const history = await getCaseHistory(actor, id);
   const reasons = JSON.parse(kase.vendorReasonsJson) as string[];
   const claimable =
     (kase.status === "pending" || kase.status === "needs_info") &&
