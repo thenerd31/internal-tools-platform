@@ -6,6 +6,8 @@ export type Policy = (actor: Actor, resource?: unknown) => boolean;
 export interface NavItem {
   label: string;
   href: string;
+  /** Roles that see this item; omit to show it to every role of the app. */
+  roles?: Role[];
 }
 
 export interface AppManifest {
