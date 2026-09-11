@@ -4,10 +4,20 @@ import type { NextAuthConfig } from "next-auth";
  * Edge-safe auth config — no providers, no db imports. Middleware uses this;
  * src/platform/auth/index.ts adds providers (which need better-sqlite3).
  */
+/**
+ * Resolves the session secret. Dev/test fall back to a constant so a fresh
+ * clone runs with zero setup; production refuses to start without AUTH_SECRET.
+ */
+export function resolveSecret(): string {
+  if (process.env.AUTH_SECRET) return process.env.AUTH_SECRET;
+  if (process.env.NODE_ENV === "production") {
+    throw new Error("AUTH_SECRET is required when NODE_ENV=production");
+  }
+  return "dev-only-insecure-secret";
+}
+
 export const authConfig = {
-  // AUTH_SECRET in real environments; the fallback exists so a fresh clone
-  // can run dev/tests/e2e with zero setup. It only signs local demo sessions.
-  secret: process.env.AUTH_SECRET ?? "dev-only-insecure-secret",
+  secret: resolveSecret(),
   session: { strategy: "jwt", maxAge: 8 * 60 * 60 },
   jwt: { maxAge: 8 * 60 * 60 },
   pages: { signIn: "/login" },
