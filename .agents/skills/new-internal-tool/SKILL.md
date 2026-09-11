@@ -18,6 +18,7 @@ Build one app under `src/apps/<id>/` that plugs into the platform. Do not touch 
 7. Run `check` (typecheck + lint + vitest) until green.
 8. Run the `test-before-pr` skill.
 9. Open a PR titled `feat(<id>)` containing: the acceptance-criteria mapping (pass/fail per numbered criterion), every ambiguity found and the decision made, screenshots, and a README section for the app.
+10. Also write docs/sessions/<id>.md: what you built, every decision you made where the spec was ambiguous, test counts, and anything you'd flag for the reviewer.
 
 ## Never
 
