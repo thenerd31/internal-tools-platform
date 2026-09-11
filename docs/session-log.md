@@ -3,8 +3,8 @@
 | Session | Task | Surface and model | Start | End | $ used | Interventions | Root causes / what went wrong | Self-report |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | 1 | Platform | Devin CLI, SWE-2 High | 11:08 | 11:56 | $0 | 1 — CI red on all three jobs after a green local run | `better-sqlite3@13` requires Node ≥22 and segfaulted on Node 20 (pinned to `^12.11.1`); Semgrep `p/default` blocked mutable action tags (pinned to SHAs) | [platform.md](sessions/platform.md) |
-| 2 | KYC queue | Devin cloud, Fusion Normal — [session](https://app.devin.ai/sessions/a02a050954c144dc8878bef3b9765eb7) | 11:46 | 14:14 | $16.41 (includes environment setup) | 3 — registry heads-up; review follow-ups (7 Devin Review threads: 5 fixed, 2 answered); admin scoping decision | Registry regen bug on `e2e`/`seed` (fixed in PR #2 in parallel, and by the session itself); migration journal collision with refunds' `0001` on merge, resolved by regenerating KYC as `0002`; Insights size __ | [kyc.md](sessions/kyc.md) |
-| 3 | Refunds | Devin cloud, Fusion Normal — [session](https://app.devin.ai/sessions/13b3c63c501847ae91ce5a7633881821) | 12:54 | 14:11 | $17.47 | 2 — rebase instructions after PR #2/#4 landed; nav gating (Approvals link hidden from agents) | Same registry regen bug, fixed in-session; Devin Review found approval could over-refund a partially refunded transaction (re-validates remaining balance inside `withMutation`); Insights size __ | [refunds.md](sessions/refunds.md) |
+| 2 | KYC queue | Devin cloud, Fusion Normal — [session](https://app.devin.ai/sessions/a02a050954c144dc8878bef3b9765eb7) | 11:46 | 14:14 | $16.41 (includes environment setup) | 3 — registry heads-up; review follow-ups (7 Devin Review threads: 5 fixed, 2 answered); admin scoping decision | Registry regen bug on `e2e`/`seed` (fixed in PR #2 in parallel, and by the session itself); migration journal collision with refunds' `0001` on merge, resolved by regenerating KYC as `0002` | [kyc.md](sessions/kyc.md) |
+| 3 | Refunds | Devin cloud, Fusion Normal — [session](https://app.devin.ai/sessions/13b3c63c501847ae91ce5a7633881821) | 12:54 | 14:11 | $17.47 | 2 — rebase instructions after PR #2/#4 landed; nav gating (Approvals link hidden from agents) | Same registry regen bug, fixed in-session; Devin Review found approval could over-refund a partially refunded transaction (re-validates remaining balance inside `withMutation`) | [refunds.md](sessions/refunds.md) |
 | 4 | Registry fix (PR #2) | Devin CLI, SWE-2 High | 13:17 | 13:26 | $0 | 0 | `gen-registry` only ran on `predev`/`prebuild`, so `db:seed` and `e2e` from a clean checkout saw a stale or empty `generated.ts`; now regenerated unconditionally before seed/e2e | commit `2b167b8` |
 | 5 | Auth hardening (PR #4) | Devin CLI, SWE-2 High | 13:28 | 14:11 | $0 | 0 | Two gaps found by writing the threat model: Credentials provider stayed registered next to OIDC in production; `AUTH_SECRET` silently fell back to a public dev constant. Both fixed in `2b820a1` | [threat-model.md](threat-model.md) |
 | 6 | Integration | Devin cloud, Fusion Normal — [session](https://app.devin.ai/sessions/a02a050954c144dc8878bef3b9765eb7) (same session as row 2, continued) | 14:25 | 14:45 | included in row 2 (same session) | 0 | Nothing failed. Fresh clone of `main`: 66 unit, 16 e2e, `audit:verify` OK → BROKEN after tamper → OK after re-seed; role nav verified in the browser | [integration.md](sessions/integration.md) |
@@ -16,7 +16,8 @@ commit times. `$ used` is $0 for CLI sessions (SWE-2 free tier; the
 transcript records tokens only: 8.6M prompt / 94k completion for session 1).
 Cloud costs are from the org usage page: total cloud spend for the day was
 $33.88 (KYC $16.41, which includes the initial environment setup; refunds
-$17.47). Insights sizes are not filled in yet (`__`).
+$17.47). Time to first PR: platform 48 min, KYC 12 min, refunds 40 min (63 min
+to merge).
 
 ## Cost of app N+1
 

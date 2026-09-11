@@ -53,11 +53,11 @@ The same check is behind the "Verify chain" button on `/admin/audit`. Stop `npm 
 
 ## How it fits together
 
-![Layers and trust boundary](docs/diagrams/01-layer-and-trust-boundary.png)
+![Layers and trust boundary](docs/diagrams/01-layer-and-trust-boundary-clean.png)
 
-![Mutation path](docs/diagrams/02-mutation-path.png)
+![Mutation path](docs/diagrams/02-mutation-path-clean.png)
 
-![Delivery loop and cost of app N+1](docs/diagrams/03-delivery-loop-cost-of-app-n-plus-1.png)
+![Delivery loop and cost of app N+1](docs/diagrams/03-delivery-loop-cost-of-app-n-plus-1-clean.png)
 
 Rules every app follows are in `AGENTS.md`. In short: writes are server actions only; each one calls `getActor()`, then `authorize(actor, "<app>.<action>", resource)`, validates input and state, and runs inside `withMutation`, which updates the row `WHERE id AND version` and appends the audit row in the same transaction. Apps are found by globbing `src/apps/*/manifest.ts`; there is no central list.
 
@@ -90,14 +90,14 @@ Commits from cloud sessions carry a `Co-Authored-By: Devin AI` trailer. Commits 
 
 From `docs/session-log.md` (times PDT; total cloud spend $33.88):
 
-| Session | Start | End | $ used | Interventions |
-| --- | --- | --- | --- | --- |
-| Platform | 11:08 | 11:56 | $0 (CLI, SWE-2 free tier; 8.6M prompt / 94k completion tokens) | 1 |
-| KYC queue | 11:46 | 14:14 | $16.41 (includes environment setup) | 3 |
-| Refunds | 12:54 | 14:11 | $17.47 | 2 |
-| Registry fix | 13:17 | 13:26 | $0 | 0 |
-| Auth hardening | 13:28 | 14:11 | $0 | 0 |
-| Integration | 14:25 | 14:45 | included in KYC (same session) | 0 |
+| Session | Start | End | $ used | Time to PR | Interventions |
+| --- | --- | --- | --- | --- | --- |
+| Platform | 11:08 | 11:56 | $0 (CLI, SWE-2 free tier; 8.6M prompt / 94k completion tokens) | 48 min | 1 |
+| KYC queue | 11:46 | 14:14 | $16.41 (includes environment setup) | 12 min | 3 |
+| Refunds | 12:54 | 14:11 | $17.47 | 40 min (63 to merge) | 2 |
+| Registry fix | 13:17 | 13:26 | $0 | — | 0 |
+| Auth hardening | 13:28 | 14:11 | $0 | — | 0 |
+| Integration | 14:25 | 14:45 | included in KYC (same session) | — | 0 |
 
 Cost of the next app, taken as the smaller of the two app sessions: $16.41 (KYC, about 2h30m wall clock including environment setup and review follow-ups). Refunds cost $17.47 over about 1h20m.
 
