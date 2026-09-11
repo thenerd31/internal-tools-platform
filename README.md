@@ -30,3 +30,19 @@ Screens:
 - `/apps/refunds/approvals` — pending approval queue (lead only; others get 403)
 
 Run it: `npm run db:migrate && npm run db:seed && npm run dev`, then sign in as `agent@demo.local` or `lead@demo.local` (password `demo`).
+
+### KYC review queue
+
+The KYC review queue is available at `/apps/kyc` for analysts and supervisors.
+Analysts see unassigned cases and their own assignments; supervisors see every
+case and can decide cases with risk scores of 70 or higher. The case detail
+route is `/apps/kyc/<id>`, where authorized reviewers can inspect vendor
+reasons, the placeholder document link, audit history, and submit a decision.
+
+The seed creates 30 deterministic cases, including unassigned high-risk
+pending cases, three in-review cases assigned to `seed-analyst` (one at score
+80), one supervisor-assigned pending case, and terminal approved/rejected plus
+needs-info examples. Run `npm run db:migrate && npm run db:seed` to load them.
+
+Run `npm run check` for unit/type/lint checks and `npm run e2e` for the KYC
+workflow, authorization, queue filtering, and screenshot coverage.

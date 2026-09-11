@@ -12,13 +12,15 @@ test("admin login lands on / and shows name and role", async ({ page }) => {
   await login(page, "admin@demo.local");
   await expect(page.getByText("Demo Admin")).toBeVisible();
   await expect(page.getByText("admin", { exact: true })).toBeVisible();
-  // Admin sees every app, including Refunds.
+  // Admin sees every app.
+  await expect(page.getByRole("link", { name: /KYC review queue/ }).first()).toBeVisible();
   await expect(page.getByRole("link", { name: /Refunds/ }).first()).toBeVisible();
 });
 
-test("analyst sees the empty state", async ({ page }) => {
+test("analyst sees only KYC", async ({ page }) => {
   await login(page, "analyst@demo.local");
-  await expect(page.getByText("No tools available.")).toBeVisible();
+  await expect(page.getByRole("link", { name: /KYC review queue/ }).first()).toBeVisible();
+  await expect(page.getByRole("link", { name: /Refunds/ })).toHaveCount(0);
 });
 
 test("sign out clears the session", async ({ page }) => {
