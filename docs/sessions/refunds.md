@@ -25,6 +25,8 @@ checks and `audit.append`; issue calls `PaymentsProvider.refund` and increments
 - Admin bypasses the self-approval policy by the platform rule (admin passes
   every policy).
 - Refund/transaction not found → `ValidationError` (422).
+- Approval re-validates the amount against the transaction's current remaining
+  balance inside `withMutation`.
 - In `approveRefundAs` the stale-version `ConflictError` check runs before the
   status check so AC9 (second approver with stale version) yields 409 rather
   than 422; AC11 still gets 422 because it passes the current version.

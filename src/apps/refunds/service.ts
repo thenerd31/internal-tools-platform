@@ -182,6 +182,12 @@ export function approveRefundAs(
       if (!fresh || fresh.version !== input.version) throw new ConflictError();
       const txn = getTransaction(tx, fresh.transactionId);
       if (!txn) throw new ValidationError("Transaction not found");
+      const remaining = txn.amountCents - txn.refundedCents;
+      if (fresh.amountCents > remaining) {
+        throw new ValidationError(
+          `Amount must be between 1 and ${remaining} cents`,
+        );
+      }
       const issued = issueWithin(tx, actor, fresh, txn, deps.payments, actor.id);
       append(tx, {
         actorId: actor.id,

@@ -320,6 +320,35 @@ describe("refunds", () => {
     ).toThrow(ValidationError);
   });
 
+  it("approval re-validates against remaining balance", () => {
+    const { db, spy, deps } = setup();
+    const txnId = insertTxn(db, { amountCents: 100000 });
+    const first = requestRefundAs(actors.agent, {
+      transactionId: txnId,
+      amountCents: 60000,
+      reason: REASON,
+      idempotencyKey: uuid(),
+    }, deps);
+    const second = requestRefundAs(actors.agent, {
+      transactionId: txnId,
+      amountCents: 60000,
+      reason: REASON,
+      idempotencyKey: uuid(),
+    }, deps);
+    const issued = approveRefundAs(actors.lead, { id: first.id, version: 1 }, deps);
+    expect(issued.status).toBe("issued");
+    let txn = db.select().from(transactions).where(eq(transactions.id, txnId)).get()!;
+    expect(txn.refundedCents).toBe(60000);
+    expect(() =>
+      approveRefundAs(actors.lead, { id: second.id, version: second.version }, deps),
+    ).toThrow(ValidationError);
+    const stillPending = db.select().from(refunds).where(eq(refunds.id, second.id)).get()!;
+    expect(stillPending.status).toBe("pending_approval");
+    expect(spy).toHaveBeenCalledTimes(1);
+    txn = db.select().from(transactions).where(eq(transactions.id, txnId)).get()!;
+    expect(txn.refundedCents).toBe(60000);
+  });
+
   it("admin passes every policy and issues directly", () => {
     const { db, spy, deps } = setup();
     const txnId = insertTxn(db, { amountCents: 250000 });
