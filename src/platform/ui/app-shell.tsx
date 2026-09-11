@@ -23,15 +23,22 @@ export function AppShell({
             Internal Tools
           </Link>
           {apps.flatMap((app) =>
-            app.nav.map((item) => (
-              <Link
-                key={item.href}
-                href={item.href}
-                className="text-sm text-slate-600 hover:text-slate-900"
-              >
-                {item.label}
-              </Link>
-            )),
+            app.nav
+              .filter(
+                (item) =>
+                  !item.roles ||
+                  actor.role === "admin" ||
+                  item.roles.includes(actor.role),
+              )
+              .map((item) => (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  className="text-sm text-slate-600 hover:text-slate-900"
+                >
+                  {item.label}
+                </Link>
+              )),
           )}
           {actor.role === "admin" && (
             <Link

@@ -25,6 +25,8 @@ checks and `audit.append`; issue calls `PaymentsProvider.refund` and increments
 - Admin bypasses the self-approval policy by the platform rule (admin passes
   every policy).
 - Refund/transaction not found → `ValidationError` (422).
+- Approvals nav item is lead-only via a new optional `NavItem.roles` (small
+  platform addition, admin sees all items).
 - Approval re-validates the amount against the transaction's current remaining
   balance inside `withMutation`.
 - In `approveRefundAs` the stale-version `ConflictError` check runs before the

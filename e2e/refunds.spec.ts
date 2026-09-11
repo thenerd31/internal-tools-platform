@@ -55,6 +55,8 @@ test("AC12 agent searches, opens customer, dialog generates idempotency key", as
 
 test("agent gets 403 on approvals", async ({ page }) => {
   await login(page, "agent@demo.local");
+  await page.goto("/apps/refunds");
+  await expect(page.getByRole("link", { name: "Approvals" })).toHaveCount(0);
   const res = await page.goto("/apps/refunds/approvals");
   expect(res?.status()).toBe(403);
   await expect(page.getByText("403")).toBeVisible();
@@ -89,6 +91,7 @@ test("AC14 e2e: agent requests above ceiling, lead approves, admin verifies chai
   await signOut(page);
 
   await login(page, "lead@demo.local");
+  await expect(page.getByRole("link", { name: "Approvals" })).toBeVisible();
   await page.goto("/apps/refunds/approvals");
   const row = page.locator("tbody tr", { hasText: "50,001" }).first();
   await expect(row).toBeVisible();

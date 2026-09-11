@@ -9,7 +9,7 @@ const manifest: AppManifest = {
   roles: ["agent", "lead"],
   nav: [
     { label: "Refunds", href: "/apps/refunds" },
-    { label: "Approvals", href: "/apps/refunds/approvals" },
+    { label: "Approvals", href: "/apps/refunds/approvals", roles: ["lead"] },
   ],
   policies: {
     "refunds.view": (a) => a.role === "agent" || a.role === "lead",
