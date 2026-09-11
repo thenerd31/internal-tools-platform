@@ -73,6 +73,8 @@ Agents search customers, open a customer's transactions and issue refunds up to 
 
 ## How this was built
 
+I wrote `docs/brief.md` (decisions only). Devin CLI expanded it into the three specs, `AGENTS.md`, and two repo skills (`.agents/skills/new-internal-tool`, `.agents/skills/test-before-pr`). Each app session was one prompt: the spec path plus the skill. Every PR went through CI, Devin Review, and human review.
+
 Six sessions with Devin, each documented in `docs/sessions/`:
 
 | # | Session | Where it ran | Notes |
@@ -101,9 +103,11 @@ From `docs/session-log.md` (times PDT; total cloud spend $33.88):
 
 Cost of the next app, taken as the smaller of the two app sessions: $16.41 (KYC, about 2h30m wall clock including environment setup and review follow-ups). Refunds cost $17.47 over about 1h20m.
 
+Agent build time for the three build sessions was 100 minutes (48 + 12 + 40); fixes found in review added about 50 more; wall clock from first prompt to last merge was 3.5 hours because sessions ran in parallel with review rounds.
+
 ## Not built and why
 
-- **Feature flags.** Two apps and five roles did not need them; role checks in manifests cover who sees what.
+- **Feature-flag admin panel.** The third Power Apps tool, left out on purpose. The panel is a form over a settings table that services already read; Devin would rebuild it in an afternoon for about $17 and it would prove nothing. The valuable part of a flag system is the engine that runs inside every service (consistent bucketing, changes reaching every service in seconds, safe fallback when the flag service is down, exposure logging). That is a product to buy (LaunchDarkly, Statsig, or Unleash) at roughly $10 to $20 per developer per month, not a tool to build, and a bug there hits every customer request rather than one analyst's queue.
 - **Real SSO.** An OIDC provider is registered when `AUTH_OIDC_ISSUER` is set, but nothing has been tested against a real issuer. Dev login uses seeded passwords and is disabled in production unless `AUTH_ALLOW_DEV_LOGIN=true`.
 - **Postgres.** SQLite in a file is enough to evaluate the approach and keeps setup to `npm install`. Drizzle migrations would carry over, but the `withMutation`/`optimisticUpdate` helpers assume better-sqlite3's synchronous transactions.
 - **Deployment.** There is no Dockerfile or hosting config; the goal was to measure build cost, not to run it.
