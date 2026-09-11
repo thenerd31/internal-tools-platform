@@ -21,11 +21,12 @@ $17.47). Insights sizes are not filled in yet (`__`).
 ## Cost of app N+1
 
 Take the smaller of the two app sessions (rows 2 and 3) as the cost of adding
-the next tool on this platform: **$16.41 or less, about 1h20m wall clock** (session 3,
-refunds at $17.47 was the shorter session; KYC at $16.41 was cheaper but that
-figure includes environment setup, so the marginal app cost is under $16.41).
-The KYC session ran longer because it also set up the environment and was interrupted
-by the registry and merge issues, both of which are fixed on `main` now.
+the next tool on this platform: **$16.41** (session 2, KYC: 11:46–14:14,
+about 2h30m wall clock including environment setup, review follow-ups and the
+merge). The refunds session cost $17.47 over about 1h20m (12:54–14:11). The
+KYC figure includes the initial environment setup, so the marginal cost of an
+app is somewhat below $16.41; the KYC session also ran longer because the
+registry and merge issues interrupted it, both of which are fixed on `main`.
 
 ## Findings
 

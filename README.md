@@ -53,11 +53,11 @@ The same check is behind the "Verify chain" button on `/admin/audit`. Stop `npm 
 
 ## How it fits together
 
-![Platform](docs/diagrams/01-platform.png)
+![Layers and trust boundary](docs/diagrams/01-layer-and-trust-boundary.png)
 
-![KYC review queue](docs/diagrams/02-kyc.png)
+![Mutation path](docs/diagrams/02-mutation-path.png)
 
-![Refunds](docs/diagrams/03-refunds.png)
+![Delivery loop and cost of app N+1](docs/diagrams/03-delivery-loop-cost-of-app-n-plus-1.png)
 
 Rules every app follows are in `AGENTS.md`. In short: writes are server actions only; each one calls `getActor()`, then `authorize(actor, "<app>.<action>", resource)`, validates input and state, and runs inside `withMutation`, which updates the row `WHERE id AND version` and appends the audit row in the same transaction. Apps are found by globbing `src/apps/*/manifest.ts`; there is no central list.
 
@@ -99,7 +99,7 @@ From `docs/session-log.md` (times PDT; total cloud spend $33.88):
 | Auth hardening | 13:28 | 14:11 | $0 | 0 |
 | Integration | 14:25 | 14:45 | included in KYC (same session) | 0 |
 
-Cost of the next app, taken as the smaller of the two app sessions: under $16.41 (the KYC figure includes environment setup) and about 1h20m wall clock (refunds), including review follow-ups.
+Cost of the next app, taken as the smaller of the two app sessions: $16.41 (KYC, about 2h30m wall clock including environment setup and review follow-ups). Refunds cost $17.47 over about 1h20m.
 
 ## Not built and why
 
