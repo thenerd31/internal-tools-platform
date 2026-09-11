@@ -19,6 +19,20 @@ async function openRefundDialog(page: Page, row: Locator) {
     .toBeGreaterThan(0);
 }
 
+/**
+ * Playwright's default caret hiding sets an inline caret-color style on every
+ * input before capturing; in dev mode that races React hydration and yields a
+ * hydration-mismatch "1 Issue" badge, so leave the caret alone.
+ */
+async function shot(page: Page, name: string) {
+  await page.screenshot({ path: `${OUT}/${name}.png`, caret: "initial" });
+}
+
+/** Rows of the transactions table (the first table on the customer page). */
+function transactionRows(page: Page) {
+  return page.locator("table").first().locator("tbody tr");
+}
+
 test.beforeAll(() => fs.mkdirSync(OUT, { recursive: true }));
 
 test("AC12 agent searches, opens customer, dialog generates idempotency key", async ({
@@ -32,8 +46,8 @@ test("AC12 agent searches, opens customer, dialog generates idempotency key", as
   await expect(
     page.getByRole("heading", { name: "Ada Lovelace" }),
   ).toBeVisible();
-  await expect(page.locator("tbody tr")).toHaveCount(4);
-  await openRefundDialog(page, page.locator("tbody tr").first());
+  await expect(transactionRows(page)).toHaveCount(4);
+  await openRefundDialog(page, transactionRows(page).first());
   await expect(page.getByTestId("idempotency-key")).toHaveValue(
     /^[0-9a-f-]{36}$/,
   );
@@ -52,7 +66,7 @@ test("AC14 e2e: agent requests above ceiling, lead approves, admin verifies chai
   await login(page, "agent@demo.local");
   await page.goto("/apps/refunds/customers/cust-1");
   // Pick a row whose remaining is above 50001; fall back to the first row.
-  const rows = page.locator("tbody tr");
+  const rows = transactionRows(page);
   let target = rows.first();
   const count = await rows.count();
   for (let i = 0; i < count; i++) {
@@ -86,7 +100,7 @@ test("AC14 e2e: agent requests above ceiling, lead approves, admin verifies chai
 
   await login(page, "admin@demo.local");
   await page.goto("/admin/audit");
-  await expect(page.getByText("refunds.refund.approve")).toBeVisible();
+  await expect(page.getByText("refunds.refund.approve").first()).toBeVisible();
   await page.getByRole("button", { name: "Verify chain" }).click();
   await expect(page.getByTestId("verify-result")).toHaveText(/^OK \d+ rows$/);
 });
@@ -96,13 +110,15 @@ test("screenshots", async ({ page }) => {
     await page.setViewportSize({ width, height: 800 });
     await login(page, "agent@demo.local");
     await page.goto("/apps/refunds");
-    await page.screenshot({ path: `${OUT}/refunds-search-${width}.png` });
+    await shot(page, `refunds-search-${width}`);
     await page.getByRole("link", { name: "Open" }).first().click();
-    await page.screenshot({ path: `${OUT}/refunds-customer-${width}.png` });
+    await page.waitForURL(/\/apps\/refunds\/customers\//);
+    await expect(transactionRows(page)).toHaveCount(4);
+    await shot(page, `refunds-customer-${width}`);
     await signOut(page);
     await login(page, "lead@demo.local");
     await page.goto("/apps/refunds/approvals");
-    await page.screenshot({ path: `${OUT}/refunds-approvals-${width}.png` });
+    await shot(page, `refunds-approvals-${width}`);
     await signOut(page);
   }
 });
