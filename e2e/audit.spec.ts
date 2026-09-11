@@ -8,8 +8,13 @@ test("admin sees /admin/audit newest first and Verify chain shows OK", async ({
   await page.goto("/admin/audit");
   await expect(page.getByRole("heading", { name: "Audit log" })).toBeVisible();
   // Seed writes one row per user; newest first means highest seq on top.
-  const firstSeq = await page.locator("tbody tr td").first().textContent();
-  expect(Number(firstSeq)).toBe(5);
+  const seqs = await page.locator("tbody tr td").evaluateAll((cells) =>
+    cells
+      .filter((_, index) => index % 7 === 0)
+      .map((cell) => Number(cell.textContent)),
+  );
+  expect(seqs[0]).toBeGreaterThanOrEqual(5);
+  expect(seqs[1]).toBe(seqs[0] - 1);
   await page.getByRole("button", { name: "Verify chain" }).click();
   await expect(page.getByTestId("verify-result")).toHaveText(/^OK \d+ rows$/);
 });

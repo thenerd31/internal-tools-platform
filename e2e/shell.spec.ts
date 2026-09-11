@@ -12,8 +12,7 @@ test("admin login lands on / and shows name and role", async ({ page }) => {
   await login(page, "admin@demo.local");
   await expect(page.getByText("Demo Admin")).toBeVisible();
   await expect(page.getByText("admin", { exact: true })).toBeVisible();
-  // No apps exist yet: empty state.
-  await expect(page.getByText("No tools available.")).toBeVisible();
+  await expect(page.getByRole("link", { name: /KYC review queue/ })).toBeVisible();
 });
 
 test("sign out clears the session", async ({ page }) => {
