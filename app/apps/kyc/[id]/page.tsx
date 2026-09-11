@@ -87,7 +87,9 @@ export default async function KycCasePage({
               <div>
                 <dt className="font-medium text-slate-700">Document</dt>
                 <dd>
-                  {/^https?:\/\//i.test(kase.documentUrl) ? (
+                  {/^https?:\/\//i.test(kase.documentUrl) ||
+                  (kase.documentUrl.startsWith("/") &&
+                    !kase.documentUrl.startsWith("//")) ? (
                     <a
                       href={kase.documentUrl}
                       className="text-slate-900 underline"
