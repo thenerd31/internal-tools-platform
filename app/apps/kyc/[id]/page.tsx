@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound, redirect, forbidden } from "next/navigation";
 import { getActor } from "@/platform/auth";
 import { authorize } from "@/platform/authz";
+import { ForbiddenError } from "@/platform/errors";
 import { getApps } from "@/platform/registry";
 import { AppShell } from "@/platform/ui/app-shell";
 import { Badge } from "@/platform/ui/badge";
@@ -38,8 +39,9 @@ export default async function KycCasePage({
   let kase: KycCase | null;
   try {
     kase = await getCaseFor(actor, id);
-  } catch {
-    forbidden();
+  } catch (error) {
+    if (error instanceof ForbiddenError) forbidden();
+    throw error;
   }
   if (!kase) notFound();
   const history = await getCaseHistory(id);
@@ -85,12 +87,16 @@ export default async function KycCasePage({
               <div>
                 <dt className="font-medium text-slate-700">Document</dt>
                 <dd>
-                  <a
-                    href={kase.documentUrl}
-                    className="text-slate-900 underline"
-                  >
-                    View uploaded ID
-                  </a>
+                  {/^https?:\/\//i.test(kase.documentUrl) ? (
+                    <a
+                      href={kase.documentUrl}
+                      className="text-slate-900 underline"
+                    >
+                      View uploaded ID
+                    </a>
+                  ) : (
+                    <span>{kase.documentUrl}</span>
+                  )}
                 </dd>
               </div>
             </dl>

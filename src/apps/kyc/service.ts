@@ -7,6 +7,8 @@ import { ConflictError, ValidationError } from "@/platform/errors";
 import type { Actor } from "@/platform/types";
 import { kycCases, SUPERVISOR_THRESHOLD, type Decision, type KycCase, type KycStatus } from "./schema";
 
+const MAX_REASON_LENGTH = 2000;
+
 function getCase(id: string, db: Db): KycCase | undefined {
   return db.select().from(kycCases).where(eq(kycCases.id, id)).get();
 }
@@ -65,22 +67,32 @@ export async function claimNextAs(
   actor: Actor,
   db: Db = getDb(),
 ): Promise<KycCase> {
-  const conditions = [
-    isNull(kycCases.assigneeId),
-    eq(kycCases.status, "pending"),
-  ];
-  if (actor.role === "analyst") {
-    conditions.push(lt(kycCases.riskScore, SUPERVISOR_THRESHOLD));
+  let lastConflict: ConflictError | null = null;
+  for (let attempt = 0; attempt < 5; attempt += 1) {
+    const conditions = [
+      isNull(kycCases.assigneeId),
+      eq(kycCases.status, "pending"),
+    ];
+    if (actor.role === "analyst") {
+      conditions.push(lt(kycCases.riskScore, SUPERVISOR_THRESHOLD));
+    }
+    const candidate = db
+      .select()
+      .from(kycCases)
+      .where(and(...conditions))
+      .orderBy(desc(kycCases.riskScore), asc(kycCases.createdAt))
+      .limit(1)
+      .get();
+    if (!candidate) throw new ValidationError("No claimable cases");
+    try {
+      return await claimCaseAs(actor, candidate.id, candidate.version, db);
+    } catch (error) {
+      if (!(error instanceof ConflictError)) throw error;
+      lastConflict = error;
+    }
   }
-  const candidate = db
-    .select()
-    .from(kycCases)
-    .where(and(...conditions))
-    .orderBy(desc(kycCases.riskScore), asc(kycCases.createdAt))
-    .limit(1)
-    .get();
-  if (!candidate) throw new ValidationError("No claimable cases");
-  return claimCaseAs(actor, candidate.id, candidate.version, db);
+  if (lastConflict) throw lastConflict;
+  throw new ValidationError("No claimable cases");
 }
 
 export async function decideCaseAs(
@@ -109,6 +121,9 @@ export async function decideCaseAs(
         ? "Note must be at least 10 characters"
         : "Reason must be at least 10 characters",
     );
+  }
+  if (trimmedReason.length > MAX_REASON_LENGTH) {
+    throw new ValidationError("Reason must be at most 2000 characters");
   }
   if (kase.status !== "in_review") {
     throw new ValidationError("Case is not in review");

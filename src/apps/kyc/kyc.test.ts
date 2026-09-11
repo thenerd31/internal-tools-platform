@@ -155,6 +155,51 @@ describe("KYC review queue", () => {
     expect(auditRows(db, "case-1")).toHaveLength(0);
   });
 
+  it("rejects decision reasons longer than 2000 characters", async () => {
+    const db = testDb();
+    insertCase(db, { status: "in_review", assigneeId: actors.analyst.id });
+
+    await expect(
+      decideCaseAs(
+        actors.analyst,
+        "case-1",
+        1,
+        "approved",
+        "x".repeat(2001),
+        db,
+      ),
+    ).rejects.toThrow("Reason must be at most 2000 characters");
+    expect(db.select().from(kycCases).get()!.status).toBe("in_review");
+    expect(auditRows(db, "case-1")).toHaveLength(0);
+  });
+
+  it("concurrent claimNext calls claim distinct cases", async () => {
+    const db = testDb();
+    insertCase(db, { id: "case-60", riskScore: 60 });
+    insertCase(db, { id: "case-50", riskScore: 50 });
+
+    const results = await Promise.all([
+      claimNextAs(actors.analyst, db),
+      claimNextAs(actors.analyst, db),
+    ]);
+
+    expect(new Set(results.map((result) => result.id)).size).toBe(2);
+    expect(
+      db
+        .select()
+        .from(kycCases)
+        .all()
+        .filter((kase) => kase.status === "in_review"),
+    ).toHaveLength(2);
+    expect(
+      db
+        .select()
+        .from(auditLog)
+        .all()
+        .filter((row) => row.action === "kyc.case.claim"),
+    ).toHaveLength(2);
+  });
+
   it("AC7: needs_info clears the assignee and validates the note", async () => {
     const db = testDb();
     insertCase(db, { status: "in_review", assigneeId: actors.analyst.id });
