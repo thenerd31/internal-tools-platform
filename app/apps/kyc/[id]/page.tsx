@@ -37,14 +37,15 @@ export default async function KycCasePage({
 
   const { id } = await params;
   let kase: KycCase | null;
+  let history: Awaited<ReturnType<typeof getCaseHistory>>;
   try {
     kase = await getCaseFor(actor, id);
+    if (!kase) notFound();
+    history = await getCaseHistory(actor, id);
   } catch (error) {
     if (error instanceof ForbiddenError) forbidden();
     throw error;
   }
-  if (!kase) notFound();
-  const history = await getCaseHistory(actor, id);
   const reasons = JSON.parse(kase.vendorReasonsJson) as string[];
   const claimable =
     (kase.status === "pending" || kase.status === "needs_info") &&
